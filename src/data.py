@@ -59,6 +59,29 @@ def build_sql_layer(*, run_tests: bool = True) -> None:
             )
 
 
+def _normalise_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    """Convert pandas nullable extension dtypes to numpy-backed equivalents.
+
+    DuckDB hands back nullable Int32/boolean columns that carry ``pd.NA``.
+    scikit-learn's ColumnTransformer refuses those in a numeric passthrough,
+    because ``pd.NA`` does not survive conversion to a numpy array. Nullable
+    integers become float64 (so missing stays missing as NaN, which LightGBM
+    handles natively) and booleans become int8.
+
+    Done here, at the data boundary, so no downstream module has to know.
+    """
+    out = df.copy()
+    for col in out.columns:
+        dtype = out[col].dtype
+        if isinstance(dtype, pd.BooleanDtype):
+            out[col] = out[col].astype("float64").fillna(0).astype("int8")
+        elif pd.api.types.is_bool_dtype(dtype):
+            out[col] = out[col].astype("int8")
+        elif isinstance(dtype, pd.api.extensions.ExtensionDtype) and                 pd.api.types.is_numeric_dtype(dtype):
+            out[col] = out[col].astype("float64")
+    return out
+
+
 def load_features() -> pd.DataFrame:
     """Read the dbt feature table into pandas.
 
@@ -77,6 +100,8 @@ def load_features() -> pd.DataFrame:
         df = con.execute(f"select * from {FEATURE_TABLE}").fetchdf()
     finally:
         con.close()
+
+    df = _normalise_dtypes(df)
 
     lowered = {c.lower() for c in df.columns}
     for leaked in LEAKED_COLUMNS:

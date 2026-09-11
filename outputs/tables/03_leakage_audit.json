@@ -1,0 +1,188 @@
+{
+  "scheme": {
+    "folds": 5,
+    "repeats": 5,
+    "rows_dev": 8101,
+    "base_rate": 0.1607208986544871
+  },
+  "counts": {
+    "safe": 18,
+    "suspect": 14,
+    "total_features": 32
+  },
+  "cv": {
+    "logistic_all": {
+      "label": "logistic_all",
+      "model_kind": "logistic",
+      "strict": false,
+      "pr_auc_mean": 0.7834890721242544,
+      "pr_auc_std": 0.019362338190189267,
+      "roc_auc_mean": 0.9354398104286474,
+      "roc_auc_std": 0.007073874719929866,
+      "brier_mean": 0.06527710658522042,
+      "brier_std": 0.0034572288564554622
+    },
+    "logistic_strict": {
+      "label": "logistic_strict",
+      "model_kind": "logistic",
+      "strict": true,
+      "pr_auc_mean": 0.23381893543205995,
+      "pr_auc_std": 0.01395136655909369,
+      "roc_auc_mean": 0.6195867602562489,
+      "roc_auc_std": 0.018108378380120756,
+      "brier_mean": 0.1317135975278675,
+      "brier_std": 0.001129489510029134
+    },
+    "lightgbm_all": {
+      "label": "lightgbm_all",
+      "model_kind": "lightgbm",
+      "strict": false,
+      "pr_auc_mean": 0.9702475863416911,
+      "pr_auc_std": 0.0072077578401955975,
+      "roc_auc_mean": 0.9931148242511505,
+      "roc_auc_std": 0.0020283637260832287,
+      "brier_mean": 0.021743677672888793,
+      "brier_std": 0.003117899723939589
+    },
+    "lightgbm_strict": {
+      "label": "lightgbm_strict",
+      "model_kind": "lightgbm",
+      "strict": true,
+      "pr_auc_mean": 0.24144195517680242,
+      "pr_auc_std": 0.014815855101345508,
+      "roc_auc_mean": 0.621348121430893,
+      "roc_auc_std": 0.01605202547938705,
+      "brier_mean": 0.13628024843276146,
+      "brier_std": 0.002474906078410585
+    }
+  },
+  "gaps": {
+    "logistic": {
+      "mean_a": 0.7834890721242544,
+      "mean_b": 0.23381893543205995,
+      "mean_diff": 0.5496701366921946,
+      "std_diff": 0.022250745185085193,
+      "diff_lo": 0.5131004670103263,
+      "diff_hi": 0.5854352133530426,
+      "a_wins_share": 1.0,
+      "n_folds": 25
+    },
+    "lightgbm": {
+      "mean_a": 0.9702475863416911,
+      "mean_b": 0.24144195517680242,
+      "mean_diff": 0.7288056311648886,
+      "std_diff": 0.01440015152281765,
+      "diff_lo": 0.705142381849684,
+      "diff_hi": 0.7545458482201431,
+      "a_wins_share": 1.0,
+      "n_folds": 25
+    }
+  },
+  "single_feature": [
+    {
+      "feature": "total_trans_amt",
+      "pr_auc": 0.8181180040090327,
+      "gain_over_strict": 0.5766760488322302,
+      "share_of_total_gap": 0.7912617907609995
+    },
+    {
+      "feature": "spend_to_limit",
+      "pr_auc": 0.7348287781681185,
+      "gain_over_strict": 0.4933868229913161,
+      "share_of_total_gap": 0.6769799818954607
+    },
+    {
+      "feature": "total_trans_ct",
+      "pr_auc": 0.7196232406351544,
+      "gain_over_strict": 0.4781812854583519,
+      "share_of_total_gap": 0.6561163429734338
+    },
+    {
+      "feature": "trans_per_active_month",
+      "pr_auc": 0.6742529177698052,
+      "gain_over_strict": 0.4328109625930028,
+      "share_of_total_gap": 0.5938633623085734
+    },
+    {
+      "feature": "total_ct_chng_q4_q1",
+      "pr_auc": 0.5478333558614155,
+      "gain_over_strict": 0.306391400684613,
+      "share_of_total_gap": 0.42040207646981465
+    },
+    {
+      "feature": "q4_activity_collapsed",
+      "pr_auc": 0.48484103186102406,
+      "gain_over_strict": 0.24339907668422164,
+      "share_of_total_gap": 0.33396980796537484
+    },
+    {
+      "feature": "total_revolving_bal",
+      "pr_auc": 0.4737942063207363,
+      "gain_over_strict": 0.2323522511439339,
+      "share_of_total_gap": 0.3188123708272575
+    },
+    {
+      "feature": "avg_utilization_ratio",
+      "pr_auc": 0.42051252743443673,
+      "gain_over_strict": 0.17907057225763431,
+      "share_of_total_gap": 0.24570415567648174
+    },
+    {
+      "feature": "revolving_to_limit",
+      "pr_auc": 0.4203920755843636,
+      "gain_over_strict": 0.17895012040756117,
+      "share_of_total_gap": 0.2455388827354911
+    },
+    {
+      "feature": "total_amt_chng_q4_q1",
+      "pr_auc": 0.3991337642128148,
+      "gain_over_strict": 0.1576918090360124,
+      "share_of_total_gap": 0.21637018471435962
+    },
+    {
+      "feature": "contacts_count_12_mon",
+      "pr_auc": 0.3934727699947301,
+      "gain_over_strict": 0.15203081481792766,
+      "share_of_total_gap": 0.20860268954690808
+    },
+    {
+      "feature": "avg_trans_amt",
+      "pr_auc": 0.38725897428992184,
+      "gain_over_strict": 0.14581701911311942,
+      "share_of_total_gap": 0.20007669106515047
+    },
+    {
+      "feature": "avg_open_to_buy",
+      "pr_auc": 0.3697850983638163,
+      "gain_over_strict": 0.12834314318701387,
+      "share_of_total_gap": 0.1761006470022415
+    },
+    {
+      "feature": "months_inactive_12_mon",
+      "pr_auc": 0.3577028875898599,
+      "gain_over_strict": 0.11626093241305749,
+      "share_of_total_gap": 0.15952254955444223
+    }
+  ],
+  "concentration": {
+    "strict_full": {
+      "n_features": 18,
+      "pr_auc": 0.24259964935974654,
+      "roc_auc": 0.6201154039028703,
+      "description": "strict (all SAFE features)"
+    },
+    "strict_minus_rel": {
+      "n_features": 16,
+      "pr_auc": 0.20148886904382085,
+      "roc_auc": 0.5709038807372127,
+      "description": "strict MINUS relationship-count features"
+    },
+    "rel_only": {
+      "n_features": 1,
+      "pr_auc": 0.21854702233695936,
+      "roc_auc": 0.6123852233584713,
+      "description": "total_relationship_count ALONE"
+    }
+  },
+  "recommendation": "strict"
+}

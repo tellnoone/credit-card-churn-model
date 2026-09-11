@@ -1,0 +1,341 @@
+==============================================================================
+STAGE 3: LEAKAGE AUDIT
+==============================================================================
+
+  Rows used (train + validation) : 8,101
+  Churn rate                     : 16.0721%
+  Test set                       : held back, 2,026 rows
+  Scheme                         : 5-fold x 5 repeats = 25 fits per model
+
+==============================================================================
+1. FEATURE-BY-FEATURE CLASSIFICATION
+==============================================================================
+
+  SAFE    : 18 features -> used by BOTH models
+  SUSPECT : 14 features -> used by `all` only
+  LEAKED  :  2 columns  -> dropped in dbt staging, never modelled
+
+  The question asked of every feature: at the moment we would need to
+  score a customer, does this value already exist, and is it free of
+  information about the churn we are trying to predict?
+
+------------------------------------------------------------------------------
+  SAFE
+------------------------------------------------------------------------------
+  * customer_age
+      Age is a property of the person, not of their account behaviour. Known
+      at application and updated by the calendar alone. Cannot be caused by
+      churning. (Whether it should be USED is a fairness question, not a
+      leakage one -- see plan section 8.)
+
+  * gender
+      Collected at application and immutable for this purpose, so it cannot be
+      a consequence of churn. Same fairness caveat as age: SAFE here is a
+      statement about leakage only, not about whether it should be used.
+
+  * dependent_count
+      Household composition, captured at application. Slow-moving and cannot
+      plausibly be caused by a decision to close a credit card account.
+
+  * education_level
+      Captured at application and effectively fixed thereafter, so it cannot
+      be caused by the churn it is used to predict. 15.0% 'Unknown', kept as
+      its own level rather than imputed.
+
+  * marital_status
+      Captured at application and rarely refreshed afterwards, so it is stale
+      rather than leaked -- it cannot be a consequence of churning. 7.4%
+      'Unknown'.
+
+  * income_category
+      Stated income at application, banded rather than continuous, so it is
+      coarse but stable and not refreshed by recent behaviour. 11.0%
+      'Unknown'.
+
+  * card_category
+      Product held. Changes only on an explicit upgrade/downgrade event, which
+      is a deliberate action rather than a symptom of disengagement.
+
+  * card_category_ord
+      Ordinal encoding of card_category on the issuer's own product ladder:
+      Blue < Silver < Gold < Platinum. Inherits card_category's SAFE class.
+
+  * months_on_book
+      Tenure. Increases with the calendar. A churner's tenure stops growing at
+      churn, which is a mild concern, but tenure is knowable at any point
+      before churn so a model can use it prospectively.
+
+  * tenure_years
+      months_on_book expressed in years, which reads more naturally in a
+      coefficient table. Same SAFE reasoning as months_on_book itself.
+
+  * total_relationship_count
+      Number of products held. A customer winding down MIGHT close products
+      first, which would make this a symptom. Classified SAFE because product
+      holdings are a deliberate cross-sell outcome and are the standard
+      pre-period feature in retention models -- but this is the weakest SAFE
+      call in the list, and is flagged as such rather than hidden.
+
+  * credit_limit
+      Set by the issuer's own risk policy at origination and on periodic
+      review, not by the customer's recent activity, so it is an input to
+      behaviour rather than an output of it.
+
+  * products_per_tenure_year
+      How fast the relationship deepened: products held per year of tenure.
+      Derived from total_relationship_count and months_on_book, both SAFE.
+
+  * education_level_ord
+      Ordinal encoding of the education ladder; NULL where 'Unknown', with the
+      signal carried by education_is_unknown instead.
+
+  * income_category_ord
+      Ordinal encoding of the stated-income bands; NULL where 'Unknown', with
+      the signal carried by income_is_unknown instead.
+
+  * education_is_unknown
+      Missingness indicator for education. Carries the signal that the ordinal
+      encoding drops when it emits NULL. Refusal to state a field is itself
+      weakly informative (+0.93pp churn, measured).
+
+  * income_is_unknown
+      Missingness indicator for stated income (+0.84pp churn, measured). May
+      also proxy an acquisition channel that did not collect it.
+
+  * marital_is_unknown
+      Missingness indicator for marital status (+1.25pp churn, measured -- the
+      strongest of the three, though all are weak).
+
+------------------------------------------------------------------------------
+  SUSPECT
+------------------------------------------------------------------------------
+  * total_trans_ct
+      Transactions over 'the last 12 months'. If that window runs up to the
+      snapshot date, then for a customer who churned six months ago it
+      includes the months they had already stopped transacting. The feature
+      would then be measuring the churn, not anticipating it.
+
+  * total_trans_amt
+      Spend over the same undated 12-month window as total_trans_ct, and so
+      carries exactly the same risk of straddling the churn event.
+
+  * months_inactive_12_mon
+      Months with no activity. For a churned customer, inactivity IS the
+      churn. Also quirky: despite the name it maxes at 6 in this snapshot, an
+      undocumented ceiling that is its own reason for caution.
+
+  * contacts_count_12_mon
+      Contacts with the bank. Plausibly a leading indicator (complaints before
+      leaving) but equally plausibly the closure call itself. Without dates or
+      contact reasons the two cannot be separated.
+
+  * total_revolving_bal
+      Revolving balance at snapshot. A closing customer pays down to zero, so
+      a low balance may be a consequence of leaving rather than a cause.
+
+  * avg_open_to_buy
+      credit_limit minus revolving balance. Inherits the balance problem:
+      arithmetically it is almost the complement of total_revolving_bal.
+
+  * avg_utilization_ratio
+      Balance over limit. Same reasoning as total_revolving_bal.
+
+  * total_amt_chng_q4_q1
+      Q4-vs-Q1 spend ratio. The sharpest case in the dataset: a collapse in
+      recent spend versus earlier spend is close to a DEFINITION of
+      disengagement rather than a predictor of it.
+
+  * total_ct_chng_q4_q1
+      Q4-vs-Q1 transaction-count ratio. Same argument as the amount ratio: a
+      collapse in recent versus earlier activity may BE the churn signal
+      rather than precede it.
+
+  * avg_trans_amt
+      Mean value per transaction. Derived from total_trans_amt and
+      total_trans_ct, both SUSPECT, so it cannot be safer than its inputs.
+
+  * revolving_to_limit
+      Derived from total_revolving_bal (SUSPECT) and credit_limit (SAFE). A
+      derived feature inherits the WORST class of its inputs.
+
+  * spend_to_limit
+      Spend as a share of the credit line. Derived from total_trans_amt, which
+      is SUSPECT, so this inherits that class.
+
+  * trans_per_active_month
+      Transactions per month the customer was actually active. Derived from
+      two SUSPECT columns (total_trans_ct and months_inactive_12_mon), so it
+      compounds their window problem rather than escaping it.
+
+  * q4_activity_collapsed
+      Binary flag on total_ct_chng_q4_q1 < 0.5. Included precisely so the
+      audit can show what a near-definition-of-churn feature does to the
+      metrics.
+
+==============================================================================
+2. PERFORMANCE: `all` vs `strict`
+==============================================================================
+
+  Repeated stratified CV. Identical folds for every model, so the
+  comparisons below are paired.
+
+
+  model                features          PR-AUC         ROC-AUC       Brier
+------------------------------------------------------------------------------
+  logistic_all               32    0.7835 ±0.019    0.9354 ±0.007      0.0653
+  logistic_strict            18    0.2338 ±0.014    0.6196 ±0.018      0.1317
+  lightgbm_all               32    0.9702 ±0.007    0.9931 ±0.002      0.0217
+  lightgbm_strict            18    0.2414 ±0.015    0.6213 ±0.016      0.1363
+------------------------------------------------------------------------------
+  random baseline             -    0.1607          0.5000
+
+  (± is the standard deviation across folds, not a confidence interval.)
+
+==============================================================================
+3. THE COST OF CAUTION
+==============================================================================
+
+  logistic
+    all    PR-AUC : 0.7835
+    strict PR-AUC : 0.2338
+    gap           : +0.5497  (+235.1% relative to strict)
+    paired fold interval : [+0.5131, +0.5854]
+    `all` wins in 100% of 25 folds
+
+  lightgbm
+    all    PR-AUC : 0.9702
+    strict PR-AUC : 0.2414
+    gap           : +0.7288  (+301.9% relative to strict)
+    paired fold interval : [+0.7051, +0.7545]
+    `all` wins in 100% of 25 folds
+
+==============================================================================
+4. WHICH SUSPECT FEATURE CARRIES THE GAP?
+==============================================================================
+
+  Each SUSPECT feature added to the strict set on its own, to see how
+  much of the gap one column explains. A single feature that recovers
+  most of the gap is the one to be most suspicious of.
+
+
+  strict-only LightGBM PR-AUC : 0.2414
+  all-features LightGBM PR-AUC: 0.9702
+  total gap                   : +0.7288
+
+  feature added to strict         PR-AUC      gain   % of gap
+------------------------------------------------------------------------------
+  total_trans_amt                 0.8181   +0.5767      79.1%
+  spend_to_limit                  0.7348   +0.4934      67.7%
+  total_trans_ct                  0.7196   +0.4782      65.6%
+  trans_per_active_month          0.6743   +0.4328      59.4%
+  total_ct_chng_q4_q1             0.5478   +0.3064      42.0%
+  q4_activity_collapsed           0.4848   +0.2434      33.4%
+  total_revolving_bal             0.4738   +0.2324      31.9%
+  avg_utilization_ratio           0.4205   +0.1791      24.6%
+  revolving_to_limit              0.4204   +0.1790      24.6%
+  total_amt_chng_q4_q1            0.3991   +0.1577      21.6%
+  contacts_count_12_mon           0.3935   +0.1520      20.9%
+  avg_trans_amt                   0.3873   +0.1458      20.0%
+  avg_open_to_buy                 0.3698   +0.1283      17.6%
+  months_inactive_12_mon          0.3577   +0.1163      16.0%
+------------------------------------------------------------------------------
+
+  NOTE: these use 5x2 CV rather than 5x5, for runtime. They are
+  indicative of ordering, not precise estimates.
+
+==============================================================================
+4b. HOW MUCH OF THE STRICT MODEL IS ONE FEATURE?
+==============================================================================
+
+  The strict model is weak. Before recommending it, it is worth asking
+  where what little signal it has actually comes from.
+
+  model                                        features    PR-AUC   ROC-AUC
+------------------------------------------------------------------------------
+  random baseline                                     -    0.1607    0.5000
+  strict (all SAFE features)                         18    0.2426    0.6201
+  strict MINUS relationship-count features           16    0.2015    0.5709
+  total_relationship_count ALONE                      1    0.2185    0.6124
+------------------------------------------------------------------------------
+
+  total_relationship_count on its own reaches 0.2185 PR-AUC --
+  90% of what the full 18-feature strict model achieves.
+  Removing it (and its derivative) costs 0.0411 and leaves the model
+  at ROC-AUC 0.5709, which is close to random.
+
+  This is uncomfortable and worth saying plainly: the strict model is
+  essentially ONE feature, and that feature is the one flagged in
+  src/features.py as the weakest SAFE call in the list. A customer who
+  is winding down their banking relationship may well close other
+  products BEFORE closing the card -- in which case product count is a
+  symptom too, and the strict model's small advantage over random is
+  partly leakage of a subtler kind.
+
+  The remaining 17 SAFE features -- every demographic, tenure, income
+  and card-tier field -- add 0.0241 PR-AUC between them.
+  Demographics barely predict churn here. That is a real finding, not a
+  modelling failure, and it is consistent with what retention teams
+  generally observe: behaviour predicts churn, attributes do not.
+
+==============================================================================
+5. RECOMMENDATION
+==============================================================================
+
+  Dropping the 14 SUSPECT features costs +0.7288 PR-AUC
+  (+301.9% relative) on the LightGBM model.
+
+  RECOMMENDED MODEL: strict.
+
+  The reasoning, stated so it can be argued with:
+
+  1. The gap does NOT tell us whether the suspect features are safe.
+     A big gap is exactly what genuine predictive power looks like, and
+     also exactly what leakage looks like. The two are empirically
+     indistinguishable from performance alone.
+
+  2. What settles it is how the data was generated, and there the
+     snapshot is silent: no churn date, no observation window. We
+     cannot demonstrate that a '12-month' aggregate ends before the
+     churn it predicts. `months_inactive_12_mon` is the clearest case
+     -- for a churned customer, inactivity IS the churn.
+
+  3. The asymmetry of being wrong. A strict model that is too cautious
+     under-performs by a known, measured amount. An `all` model built
+     on leakage looks excellent in validation and fails silently in
+     production, after the campaign budget has been committed.
+
+  4. The strict model is deployable as specified. Every feature in it
+     is available at scoring time for a customer who has not churned.
+
+------------------------------------------------------------------------------
+  BUT THE RECOMMENDATION COMES WITH A SERIOUS CAVEAT
+------------------------------------------------------------------------------
+
+  The strict model is weak: PR-AUC 0.2426 against a 0.1607 base rate,
+  ROC-AUC 0.6201. And per section 4b it is effectively one
+  feature, which is itself of contestable safety.
+
+  So the honest headline is NOT 'here is a churn model'. It is:
+
+    This dataset cannot support a deployable churn model built only on
+    features that are demonstrably known before churn. The 0.97 PR-AUC
+    version is almost certainly reading the answer; the leak-free
+    version barely beats guessing.
+
+  That is a finding about the DATA, and it is the correct thing to
+  report to a business. Shipping the 0.97 model would mean committing a
+  retention budget against a number that will not survive contact with
+  production.
+
+  What a real deployment would do instead: keep the behavioural
+  features, but compute them over a window that provably CLOSES before
+  the prediction date -- transactions in months 1-6 predicting churn in
+  months 7-12. That is standard practice and it works. It is impossible
+  here only because this snapshot has no dates. The strict model is
+  therefore a pessimistic lower bound, not an estimate of what a
+  properly-built model would achieve.
+
+  What would change this recommendation: a data dictionary showing the
+  behavioural window closes before the churn observation window opens.
+  That is a question for the data owner, not for the model.
+
