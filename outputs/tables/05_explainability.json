@@ -1,0 +1,429 @@
+{
+  "global_importance": [
+    {
+      "feature": "total_relationship_count",
+      "mean_abs_shap": 0.2143504065669584,
+      "share": 0.3040024017793213,
+      "cumulative": 0.3040024017793213
+    },
+    {
+      "feature": "credit_limit",
+      "mean_abs_shap": 0.16680691227619765,
+      "share": 0.23657385482735735,
+      "cumulative": 0.5405762566066786
+    },
+    {
+      "feature": "products_per_tenure_year",
+      "mean_abs_shap": 0.11827629592876782,
+      "share": 0.16774532230558295,
+      "cumulative": 0.7083215789122616
+    },
+    {
+      "feature": "gender_F",
+      "mean_abs_shap": 0.06312948807066991,
+      "share": 0.08953337809782812,
+      "cumulative": 0.7978549570100897
+    },
+    {
+      "feature": "customer_age",
+      "mean_abs_shap": 0.02700603052238608,
+      "share": 0.038301294934873074,
+      "cumulative": 0.8361562519449628
+    },
+    {
+      "feature": "marital_status_Married",
+      "mean_abs_shap": 0.02125361612123486,
+      "share": 0.03014293488327384,
+      "cumulative": 0.8662991868282366
+    },
+    {
+      "feature": "income_category_ord",
+      "mean_abs_shap": 0.019592045009466402,
+      "share": 0.02778641213720217,
+      "cumulative": 0.8940855989654387
+    },
+    {
+      "feature": "months_on_book",
+      "mean_abs_shap": 0.016937951401660756,
+      "share": 0.02402224464975671,
+      "cumulative": 0.9181078436151954
+    },
+    {
+      "feature": "gender_M",
+      "mean_abs_shap": 0.013772304763249373,
+      "share": 0.019532567225417075,
+      "cumulative": 0.9376404108406124
+    },
+    {
+      "feature": "dependent_count",
+      "mean_abs_shap": 0.010296834502960102,
+      "share": 0.014603482539447526,
+      "cumulative": 0.95224389338006
+    },
+    {
+      "feature": "education_level_ord",
+      "mean_abs_shap": 0.008812827149322952,
+      "share": 0.012498789541709071,
+      "cumulative": 0.964742682921769
+    },
+    {
+      "feature": "tenure_years",
+      "mean_abs_shap": 0.0034188560943120873,
+      "share": 0.0048487916615361165,
+      "cumulative": 0.9695914745833051
+    },
+    {
+      "feature": "marital_status_Single",
+      "mean_abs_shap": 0.0030003862826354934,
+      "share": 0.004255296972819091,
+      "cumulative": 0.9738467715561242
+    },
+    {
+      "feature": "card_category_ord",
+      "mean_abs_shap": 0.002960078026575229,
+      "share": 0.004198129800383483,
+      "cumulative": 0.9780449013565077
+    },
+    {
+      "feature": "education_level_Post-Graduate",
+      "mean_abs_shap": 0.002928174466118647,
+      "share": 0.004152882585043665,
+      "cumulative": 0.9821977839415513
+    },
+    {
+      "feature": "education_level_High School",
+      "mean_abs_shap": 0.001846370180926025,
+      "share": 0.002618613972163815,
+      "cumulative": 0.9848163979137151
+    },
+    {
+      "feature": "income_category_Less than $40K",
+      "mean_abs_shap": 0.001735221614662889,
+      "share": 0.0024609775503837317,
+      "cumulative": 0.9872773754640989
+    },
+    {
+      "feature": "income_category_$60K - $80K",
+      "mean_abs_shap": 0.0016713512438210926,
+      "share": 0.0023703934155112063,
+      "cumulative": 0.98964776887961
+    },
+    {
+      "feature": "marital_is_unknown",
+      "mean_abs_shap": 0.0016188276907626437,
+      "share": 0.002295901901660197,
+      "cumulative": 0.9919436707812702
+    },
+    {
+      "feature": "education_level_College",
+      "mean_abs_shap": 0.0011903695796189264,
+      "share": 0.0016882413101285754,
+      "cumulative": 0.9936319120913988
+    },
+    {
+      "feature": "card_category_Blue",
+      "mean_abs_shap": 0.0011305659263220167,
+      "share": 0.001603424796231462,
+      "cumulative": 0.9952353368876302
+    },
+    {
+      "feature": "education_level_Graduate",
+      "mean_abs_shap": 0.001021718628235453,
+      "share": 0.0014490521473735812,
+      "cumulative": 0.9966843890350038
+    },
+    {
+      "feature": "marital_status_Divorced",
+      "mean_abs_shap": 0.0005939483584342791,
+      "share": 0.0008423670866259938,
+      "cumulative": 0.9975267561216298
+    },
+    {
+      "feature": "income_category_$40K - $60K",
+      "mean_abs_shap": 0.0005428842025810751,
+      "share": 0.0007699453624369223,
+      "cumulative": 0.9982967014840667
+    },
+    {
+      "feature": "income_category_$120K +",
+      "mean_abs_shap": 0.00044947862902911786,
+      "share": 0.0006374729349097094,
+      "cumulative": 0.9989341744189764
+    },
+    {
+      "feature": "income_category_$80K - $120K",
+      "mean_abs_shap": 0.0003082175026654619,
+      "share": 0.00043712938352396033,
+      "cumulative": 0.9993713038025003
+    },
+    {
+      "feature": "education_level_Uneducated",
+      "mean_abs_shap": 0.00012852314080338738,
+      "share": 0.00018227790706917376,
+      "cumulative": 0.9995535817095694
+    },
+    {
+      "feature": "education_level_Doctorate",
+      "mean_abs_shap": 0.0001254224687559036,
+      "share": 0.00017788037983952222,
+      "cumulative": 0.999731462089409
+    },
+    {
+      "feature": "marital_status_Unknown",
+      "mean_abs_shap": 0.00012041246676718367,
+      "share": 0.0001707749459759561,
+      "cumulative": 0.9999022370353849
+    },
+    {
+      "feature": "card_category_Gold",
+      "mean_abs_shap": 6.893212385722557e-05,
+      "share": 9.776296461467254e-05,
+      "cumulative": 0.9999999999999997
+    },
+    {
+      "feature": "education_is_unknown",
+      "mean_abs_shap": 0.0,
+      "share": 0.0,
+      "cumulative": 0.9999999999999997
+    },
+    {
+      "feature": "income_is_unknown",
+      "mean_abs_shap": 0.0,
+      "share": 0.0,
+      "cumulative": 0.9999999999999997
+    },
+    {
+      "feature": "education_level_Unknown",
+      "mean_abs_shap": 0.0,
+      "share": 0.0,
+      "cumulative": 0.9999999999999997
+    },
+    {
+      "feature": "income_category_Unknown",
+      "mean_abs_shap": 0.0,
+      "share": 0.0,
+      "cumulative": 0.9999999999999997
+    },
+    {
+      "feature": "card_category_Platinum",
+      "mean_abs_shap": 0.0,
+      "share": 0.0,
+      "cumulative": 0.9999999999999997
+    },
+    {
+      "feature": "card_category_Silver",
+      "mean_abs_shap": 0.0,
+      "share": 0.0,
+      "cumulative": 0.9999999999999997
+    }
+  ],
+  "individuals": [
+    {
+      "label": "highest risk",
+      "customer_id": 716333283,
+      "score": 0.5606101956457001,
+      "actual": 0,
+      "explanations": [
+        "has taken on 0.23 products per year of tenure -- this raises their churn score",
+        "has a credit limit of $1,869 -- this raises their churn score",
+        "holds 1 product(s) with us -- this raises their churn score",
+        "is 58 years old -- this raises their churn score"
+      ]
+    },
+    {
+      "label": "median risk",
+      "customer_id": 715210308,
+      "score": 0.13156559892912564,
+      "actual": 0,
+      "explanations": [
+        "has a credit limit of $15,970 -- this lowers their churn score",
+        "holds 3 product(s) with us -- this raises their churn score",
+        "has taken on 1.16 products per year of tenure -- this lowers their churn score",
+        "is recorded as gender F -- this raises their churn score"
+      ]
+    },
+    {
+      "label": "lowest risk",
+      "customer_id": 721344858,
+      "score": 0.05174273019653401,
+      "actual": 0,
+      "explanations": [
+        "has taken on 3.69 products per year of tenure -- this lowers their churn score",
+        "has a credit limit of $2,237 -- this lowers their churn score",
+        "holds 4 product(s) with us -- this lowers their churn score",
+        "is recorded as gender F -- this lowers their churn score"
+      ]
+    }
+  ],
+  "disparity": [
+    {
+      "dimension": "gender",
+      "group": "F",
+      "n": 1060,
+      "churn_rate": 0.17264150943396225,
+      "pr_auc": 0.29695828608543473,
+      "roc_auc": 0.6591117258911714,
+      "targeted_share": 0.15566037735849056,
+      "targeting_per_unit_risk": 0.9016393442622951
+    },
+    {
+      "dimension": "gender",
+      "group": "M",
+      "n": 966,
+      "churn_rate": 0.14699792960662525,
+      "pr_auc": 0.2692573393906754,
+      "roc_auc": 0.6676552030630385,
+      "targeted_share": 0.08799171842650104,
+      "targeting_per_unit_risk": 0.5985915492957747
+    },
+    {
+      "dimension": "age_band",
+      "group": "<35",
+      "n": 187,
+      "churn_rate": 0.1443850267379679,
+      "pr_auc": 0.3591057155988314,
+      "roc_auc": 0.7118055555555556,
+      "targeted_share": 0.11764705882352941,
+      "targeting_per_unit_risk": 0.8148148148148149
+    },
+    {
+      "dimension": "age_band",
+      "group": "35-44",
+      "n": 751,
+      "churn_rate": 0.17310252996005326,
+      "pr_auc": 0.3149494202550436,
+      "roc_auc": 0.6797720797720799,
+      "targeted_share": 0.11051930758988016,
+      "targeting_per_unit_risk": 0.6384615384615384
+    },
+    {
+      "dimension": "age_band",
+      "group": "45-54",
+      "n": 804,
+      "churn_rate": 0.15920398009950248,
+      "pr_auc": 0.25999338012675,
+      "roc_auc": 0.6254969489644969,
+      "targeted_share": 0.1181592039800995,
+      "targeting_per_unit_risk": 0.7421875
+    },
+    {
+      "dimension": "age_band",
+      "group": "55+",
+      "n": 284,
+      "churn_rate": 0.14084507042253522,
+      "pr_auc": 0.29882641781088803,
+      "roc_auc": 0.7202868852459017,
+      "targeted_share": 0.176056338028169,
+      "targeting_per_unit_risk": 1.2499999999999998
+    }
+  ],
+  "gender_disparity": {
+    "risk_ratio_f_over_m": 1.174448578262025,
+    "targeting_ratio_f_over_m": 1.769034406215316
+  },
+  "group_performance": [
+    {
+      "dimension": "gender",
+      "group": "F",
+      "n": 1060,
+      "churn_rate": 0.17264150943396225,
+      "pr_auc": 0.29695828608543473,
+      "roc_auc": 0.6591117258911714,
+      "targeted_share": 0.15566037735849056
+    },
+    {
+      "dimension": "gender",
+      "group": "M",
+      "n": 966,
+      "churn_rate": 0.14699792960662525,
+      "pr_auc": 0.2692573393906754,
+      "roc_auc": 0.6676552030630385,
+      "targeted_share": 0.08799171842650104
+    },
+    {
+      "dimension": "age_band",
+      "group": "<35",
+      "n": 187,
+      "churn_rate": 0.1443850267379679,
+      "pr_auc": 0.3591057155988314,
+      "roc_auc": 0.7118055555555556,
+      "targeted_share": 0.11764705882352941
+    },
+    {
+      "dimension": "age_band",
+      "group": "35-44",
+      "n": 751,
+      "churn_rate": 0.17310252996005326,
+      "pr_auc": 0.3149494202550436,
+      "roc_auc": 0.6797720797720799,
+      "targeted_share": 0.11051930758988016
+    },
+    {
+      "dimension": "age_band",
+      "group": "45-54",
+      "n": 804,
+      "churn_rate": 0.15920398009950248,
+      "pr_auc": 0.25999338012675,
+      "roc_auc": 0.6254969489644969,
+      "targeted_share": 0.1181592039800995
+    },
+    {
+      "dimension": "age_band",
+      "group": "55+",
+      "n": 284,
+      "churn_rate": 0.14084507042253522,
+      "pr_auc": 0.29882641781088803,
+      "roc_auc": 0.7202868852459017,
+      "targeted_share": 0.176056338028169
+    }
+  ],
+  "removal_cost": {
+    "mean_a": 0.24245891343364956,
+    "mean_b": 0.2426577846195039,
+    "mean_diff": -0.00019887118585432684,
+    "std_diff": 0.01295365944670216,
+    "diff_lo": -0.024608503019308493,
+    "diff_hi": 0.021077036759953666,
+    "a_wins_share": 0.48,
+    "n_folds": 25
+  },
+  "gender_neutral": {
+    "dropped": [
+      "income_category",
+      "credit_limit",
+      "income_category_ord",
+      "income_is_unknown"
+    ],
+    "recovery_after": 0.5116333364135959,
+    "pr_auc_cost": {
+      "mean_a": 0.2426577846195039,
+      "mean_b": 0.20971780110175114,
+      "mean_diff": 0.032939983517752756,
+      "std_diff": 0.014783789491921896,
+      "diff_lo": 0.005753763099342269,
+      "diff_hi": 0.0579413400713921,
+      "a_wins_share": 0.96,
+      "n_folds": 25
+    }
+  },
+  "proxy_recovery": [
+    {
+      "attribute": "gender",
+      "feature_set": "strict minus age+gender",
+      "recovery_roc_auc": 0.9551670951855495,
+      "base_rate": 0.47242798353909465
+    },
+    {
+      "attribute": "age 55+",
+      "feature_set": "strict minus age+gender",
+      "recovery_roc_auc": 0.9102064446732376,
+      "base_rate": 0.15818930041152263
+    },
+    {
+      "attribute": "gender",
+      "feature_set": "also minus income+limit",
+      "recovery_roc_auc": 0.5116333364135959,
+      "base_rate": 0.47242798353909465
+    }
+  ]
+}

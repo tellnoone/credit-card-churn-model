@@ -1,0 +1,258 @@
+==============================================================================
+STAGE 5: EXPLAINABILITY AND FAIRNESS
+==============================================================================
+
+  Model explained: lightgbm_strict, the stage 4 recommendation.
+  SHAP values computed on the test set (already scored in stage 4, so
+  no new information is extracted from it).
+
+==============================================================================
+1. GLOBAL IMPORTANCE (mean |SHAP|)
+==============================================================================
+
+  rank  feature                           mean|SHAP|    share     cum
+------------------------------------------------------------------------------
+     1  total_relationship_count              0.2144   30.4%   30.4%
+     2  credit_limit                          0.1668   23.7%   54.1%
+     3  products_per_tenure_year              0.1183   16.8%   70.8%
+     4  gender_F                              0.0631    9.0%   79.8%
+     5  customer_age                          0.0270    3.8%   83.6%
+     6  marital_status_Married                0.0213    3.0%   86.6%
+     7  income_category_ord                   0.0196    2.8%   89.4%
+     8  months_on_book                        0.0169    2.4%   91.8%
+     9  gender_M                              0.0138    2.0%   93.8%
+    10  dependent_count                       0.0103    1.5%   95.2%
+    11  education_level_ord                   0.0088    1.2%   96.5%
+    12  tenure_years                          0.0034    0.5%   97.0%
+    13  marital_status_Single                 0.0030    0.4%   97.4%
+    14  card_category_ord                     0.0030    0.4%   97.8%
+    15  education_level_Post-Graduate         0.0029    0.4%   98.2%
+------------------------------------------------------------------------------
+
+  total_relationship_count carries 30% of the total attribution.
+  The top 3 features carry 71%.
+
+  This matches the stage 3 concentration finding from a different
+  direction: the model is mostly one feature. SHAP is not revealing a
+  rich set of churn drivers, because the strict feature set does not
+  contain one.
+
+==============================================================================
+2. THREE CUSTOMERS, EXPLAINED
+==============================================================================
+
+  HIGHEST RISK  --  customer 716333283
+    model score : 56.1% probability of churn
+    actually    : stayed
+    baseline    : 15.0% (the average customer)
+    why:
+      - has taken on 0.23 products per year of tenure -- this raises their churn score  (+0.729)
+      - has a credit limit of $1,869 -- this raises their churn score  (+0.694)
+      - holds 1 product(s) with us -- this raises their churn score  (+0.460)
+      - is 58 years old -- this raises their churn score  (+0.066)
+
+  MEDIAN RISK  --  customer 715210308
+    model score : 13.2% probability of churn
+    actually    : stayed
+    baseline    : 15.0% (the average customer)
+    why:
+      - has a credit limit of $15,970 -- this lowers their churn score  (-0.183)
+      - holds 3 product(s) with us -- this raises their churn score  (+0.093)
+      - has taken on 1.16 products per year of tenure -- this lowers their churn score  (-0.049)
+      - is recorded as gender F -- this raises their churn score  (+0.049)
+
+  LOWEST RISK  --  customer 721344858
+    model score : 5.2% probability of churn
+    actually    : stayed
+    baseline    : 15.0% (the average customer)
+    why:
+      - has taken on 3.69 products per year of tenure -- this lowers their churn score  (-0.404)
+      - has a credit limit of $2,237 -- this lowers their churn score  (-0.287)
+      - holds 4 product(s) with us -- this lowers their churn score  (-0.256)
+      - is recorded as gender F -- this lowers their churn score  (-0.127)
+
+  A caveat that belongs next to any individual explanation here: the
+  model's scores span roughly 5% to 56%, so even the 'highest risk'
+  customer is more likely to stay than to leave. An explanation makes
+  the score legible; it does not make the score confident.
+
+==============================================================================
+3. FAIRNESS: SHOULD AGE AND GENDER BE IN THIS MODEL AT ALL?
+==============================================================================
+
+  This is a UK financial-services retention decision, so the question is
+  legal before it is technical.
+
+  The argument FOR using them: a retention offer is a benefit, not a
+  denial of service. Withholding credit by protected characteristic is
+  the classic harm; here we are deciding who gets offered a discount.
+
+  The argument AGAINST, which I find stronger:
+    - Sex, age and marital status are protected characteristics under
+      the Equality Act 2010. Allocating commercial benefit by them
+      invites a discrimination challenge whatever the intent.
+    - 'The model found it predictive' is not a defence anyone wants to
+      make to the FCA under Consumer Duty, which asks whether outcomes
+      are fair across customer groups.
+    - The reputational asymmetry is brutal: 'bank offers worse retention
+      deals to women' is a headline; a 0.002 PR-AUC gain is not.
+
+  How the CURRENT model behaves per group (test set, already scored):
+
+  by gender:
+    group           n    churn    PR-AUC   ROC-AUC  targeted@250
+    F           1,060   17.26%    0.2970    0.6591        15.6%
+    M             966   14.70%    0.2693    0.6677         8.8%
+
+  by age_band:
+    group           n    churn    PR-AUC   ROC-AUC  targeted@250
+    <35           187   14.44%    0.3591    0.7118        11.8%
+    35-44         751   17.31%    0.3149    0.6798        11.1%
+    45-54         804   15.92%    0.2600    0.6255        11.8%
+    55+           284   14.08%    0.2988    0.7203        17.6%
+
+  DISPARITY: targeting rate against underlying risk
+
+  A group that churns more SHOULD be targeted more. The question is
+  whether targeting is proportionate to risk. The ratio below is
+  (share targeted) / (actual churn rate): equal values across groups
+  means proportionate treatment, whatever the underlying rates.
+
+  by gender:
+    group         churn  targeted    ratio
+    F            17.26%    15.57%     0.90
+    M            14.70%     8.80%     0.60
+    -> 'F' is targeted 1.51x as hard per unit of
+       actual risk as 'M'
+
+  by age_band:
+    group         churn  targeted    ratio
+    <35          14.44%    11.76%     0.81
+    35-44        17.31%    11.05%     0.64
+    45-54        15.92%    11.82%     0.74
+    55+          14.08%    17.61%     1.25
+    -> '55+' is targeted 1.96x as hard per unit of
+       actual risk as '35-44'
+
+  Stated plainly for gender: women churn 1.17x as often as
+  men in this test set, but are targeted 1.77x as often.
+  The targeting gap is materially wider than the risk gap, which is
+  what disparate impact looks like in a targeting model. It is
+  visible here only because the check was run -- no metric in stage 4
+  would have surfaced it.
+
+==============================================================================
+4. WHAT DOES REMOVING AGE AND GENDER COST?
+==============================================================================
+
+  Measured by repeated CV on the training set. Not on test: stage 4
+  spent the one permitted test pass, and a second would undermine the
+  number reported there.
+
+  with age + gender    : PR-AUC 0.2425
+  without age + gender : PR-AUC 0.2427
+  cost of removal      : -0.0002 PR-AUC
+  paired fold interval : [-0.0246, +0.0211]
+  keeping them wins in 48% of 25 folds
+
+  The paired interval spans zero: removing them costs nothing the
+  data can distinguish from noise.
+
+==============================================================================
+5. DOES REMOVING THEM ACTUALLY REMOVE THE INFORMATION?
+==============================================================================
+
+  Dropping a column does not delete what it encoded if other features
+  predict it. Testing that directly: can the remaining SAFE features
+  recover gender and age band?
+
+  predicting gender     from the other features: ROC-AUC 0.9552
+  predicting age 55+    from the other features: ROC-AUC 0.9102
+
+  ROC-AUC 0.9552. Gender survives its own deletion almost
+  intact. Dropping the column is very nearly cosmetic.
+
+  WHICH FEATURE IS DOING IT:
+
+    feature                     ROC-AUC for gender
+    income_category                         0.9488
+    income_category_ord                     0.9275
+    credit_limit                            0.7542
+    income_is_unknown                       0.4025
+
+  income_category by gender (% of each gender in each band):
+
+    band                     F       M
+    $120K +                0.0    15.9
+    $40K - $60K           18.9    16.7
+    $60K - $80K            0.0    28.8
+    $80K - $120K           0.0    32.3
+    Less than $40K        60.6     5.4
+    Unknown               20.5     1.0
+
+  Read the zeros. In this dataset there is not one woman in the
+  $60K-$80K, $80K-$120K or $120K+ bands, while 60.6% of women sit in
+  'Less than $40K' against 5.4% of men. Income band above $60K
+  therefore implies male with certainty, which is why a model
+  recovers gender at ROC-AUC 0.96 without ever seeing it.
+
+  Credit limit carries it too: the training-set mean is $5,123 for women against $12,907 for men.
+
+  (A distribution this clean is almost certainly an artefact of a
+  teaching dataset rather than a real portfolio. It is still the
+  perfect illustration of the problem, and the check is exactly the
+  one to run on real data.)
+
+  WHAT WOULD IT TAKE TO ACTUALLY REMOVE GENDER?
+
+    also dropping income_category, credit_limit, income_category_ord, income_is_unknown
+    gender recovery falls from 0.9552 to 0.5116
+    model PR-AUC falls from 0.2427 to 0.2097, a cost of 0.0329
+    paired fold interval [+0.0058, +0.0579]
+
+==============================================================================
+6. RECOMMENDATION
+==============================================================================
+
+  1. REMOVE age and gender as model inputs.
+     Measured cost: -0.0002 PR-AUC, paired interval
+     [-0.0246, +0.0211] -- indistinguishable from
+     zero. There is no performance argument for keeping them, so the
+     legal and reputational exposure is unpaid-for risk.
+
+  2. BUT DO NOT CLAIM THE MODEL IS THEREFORE GENDER-BLIND.
+     Gender is still recoverable at ROC-AUC 0.9552 from the
+     remaining features, overwhelmingly through income_category.
+     A fairness claim based on 'we do not use gender' would be
+     false, and falsifiable by anyone who runs the check above.
+
+  3. The real choice is between two honest positions:
+
+     (a) Keep income and credit limit, accept that the model
+         encodes gender, and manage it by monitoring OUTCOMES by
+         group rather than by policing inputs.
+     (b) Drop income and credit limit too. Recovery falls to
+         0.5116 -- genuinely gender-blind -- at a cost
+         of 0.0329 PR-AUC, which is 40% of
+         the model's entire margin over random.
+
+     I recommend (a), for a specific reason: income and credit limit
+     are legitimate, causally-relevant predictors of retention in a
+     credit product. Removing genuine economic signal to break a
+     statistical association is the kind of fix that degrades the
+     model without helping anyone. Fairness here has to be measured
+     on who gets the offer, not on which columns were fed in.
+
+  4. Therefore the fairness control is an OUTCOME control:
+     - report targeting rate and offer acceptance by gender and age
+       band every campaign cycle, not once at build time
+     - set a tolerance in advance for divergence between a group's
+       targeting rate and its actual churn rate
+     - escalate to a human when it breaches, rather than silently
+       rebalancing the model
+
+  What none of this fixes: removing inputs does not guarantee equal
+  outcomes, and this dataset has no offer-response data, so whether the
+  campaign itself lands differently across groups is untestable here.
+  That is a question for the stage 7 experiment.
+
