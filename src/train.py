@@ -129,3 +129,125 @@ def xy(df: pd.DataFrame, *, strict: bool) -> tuple[pd.DataFrame, np.ndarray]:
 def feature_names_out(pipeline: Pipeline) -> list[str]:
     """Column names after preprocessing, for coefficient and SHAP tables."""
     return list(pipeline.named_steps["prep"].get_feature_names_out())
+
+
+# ---------------------------------------------------------------------------
+# Hyperparameter search
+# ---------------------------------------------------------------------------
+
+SEARCH_SPACES: dict[ModelKind, dict[str, Any]] = {
+    # Only the regularisation strength is searched. The solver and penalty are
+    # fixed because changing them changes what the coefficients MEAN, and the
+    # logistic model earns its place here by being readable.
+    "logistic": {
+        "model__C": [0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0],
+    },
+    # Ranges chosen for a small, imbalanced tabular problem: shallow trees and
+    # strong minimum-leaf sizes, because ~975 positives in a training fold will
+    # let a deep tree memorise individuals.
+    "lightgbm": {
+        "model__n_estimators": [200, 300, 400, 600, 800],
+        "model__learning_rate": [0.01, 0.02, 0.05, 0.1],
+        "model__num_leaves": [7, 15, 31, 63],
+        "model__max_depth": [3, 4, 5, 6, -1],
+        "model__min_child_samples": [10, 20, 40, 80],
+        "model__subsample": [0.7, 0.8, 0.9, 1.0],
+        "model__colsample_bytree": [0.6, 0.8, 1.0],
+        "model__reg_lambda": [0.0, 1.0, 5.0, 20.0],
+    },
+}
+
+
+def tune_model(
+    kind: ModelKind,
+    X: pd.DataFrame,
+    y: np.ndarray,
+    *,
+    strict: bool,
+    n_iter: int = 25,
+    cv_splits: int = 5,
+    seed: int = RANDOM_SEED,
+    scoring: str = "average_precision",
+) -> tuple[Pipeline, dict[str, Any], float]:
+    """Randomised search on the TRAINING set only.
+
+    Scored by average precision (PR-AUC), the plan's primary metric, so the
+    search optimises the thing the project says it cares about rather than
+    accuracy.
+
+    Deliberately run on train alone, not train+validation: the validation set
+    has to stay unused by any fitting decision so it can calibrate the final
+    model and choose an operating threshold.
+
+    Returns:
+        (fitted best pipeline, best params, best CV score)
+    """
+    from sklearn.model_selection import RandomizedSearchCV, StratifiedKFold
+
+    space = SEARCH_SPACES[kind]
+    base = make_pipeline(kind, strict=strict)
+
+    # An exhaustive grid is cheaper than sampling when the space is tiny.
+    n_combos = 1
+    for values in space.values():
+        n_combos *= len(values)
+    n_iter = min(n_iter, n_combos)
+
+    search = RandomizedSearchCV(
+        base,
+        param_distributions=space,
+        n_iter=n_iter,
+        scoring=scoring,
+        cv=StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=seed),
+        random_state=seed,
+        n_jobs=1,
+        refit=True,
+        error_score="raise",
+    )
+    search.fit(X, y)
+    return search.best_estimator_, search.best_params_, float(search.best_score_)
+
+
+def calibrate(estimator: Any, X_val: pd.DataFrame, y_val: np.ndarray,
+              *, method: str = "isotonic") -> Any:
+    """Wrap a fitted estimator in a calibrator fitted on held-out data.
+
+    The estimator is frozen first, so calibration learns only the mapping from
+    its scores to probabilities and cannot refit the underlying model. Fitting
+    the calibrator on data the model was trained on would produce a mapping that
+    looks perfect in training and is wrong everywhere else.
+    """
+    from sklearn.calibration import CalibratedClassifierCV
+    from sklearn.frozen import FrozenEstimator
+
+    calibrated = CalibratedClassifierCV(FrozenEstimator(estimator), method=method)
+    calibrated.fit(X_val, y_val)
+    return calibrated
+
+
+class HeuristicRanker:
+    """Rank customers by a single column, no fitting involved.
+
+    The bar a model has to clear to justify its existence: this is what a
+    competent analyst produces in an afternoon with a SQL query and no model.
+    """
+
+    def __init__(self, column: str, *, ascending: bool = True) -> None:
+        self.column = column
+        self.ascending = ascending
+        self._lo: float = 0.0
+        self._hi: float = 1.0
+
+    def fit(self, X: pd.DataFrame, y: np.ndarray | None = None) -> "HeuristicRanker":
+        values = X[self.column].astype(float)
+        self._lo, self._hi = float(values.min()), float(values.max())
+        return self
+
+    def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
+        values = X[self.column].astype(float).to_numpy()
+        span = self._hi - self._lo
+        scaled = (values - self._lo) / span if span else np.zeros_like(values)
+        # `ascending=True` means a LOW value indicates high churn risk.
+        score = 1.0 - scaled if self.ascending else scaled
+        score = np.clip(np.nan_to_num(score, nan=0.5), 0.0, 1.0)
+        return np.column_stack([1.0 - score, score])

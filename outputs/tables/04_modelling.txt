@@ -1,0 +1,190 @@
+==============================================================================
+STAGE 4: MODELLING
+==============================================================================
+
+  train      : 6,075 rows  (16.07% churn)
+  validation : 2,026 rows  (16.09% churn)  -- calibration only
+  test       : 2,026 rows  (16.04% churn)  -- scored ONCE
+
+  Tuning runs on TRAIN alone. The validation set is kept clear of every
+  fitting decision so it can calibrate the final model honestly.
+
+==============================================================================
+1. TUNING (train only, randomised search on PR-AUC)
+==============================================================================
+
+  logistic_strict      best CV PR-AUC 0.2415
+      C                     0.03
+
+  lightgbm_strict      best CV PR-AUC 0.2731
+      colsample_bytree      0.8
+      learning_rate         0.01
+      max_depth             6
+      min_child_samples     20
+      n_estimators          300
+      num_leaves            7
+      reg_lambda            0.0
+      subsample             0.9
+
+  logistic_all         best CV PR-AUC 0.7838
+      C                     1.0
+
+  lightgbm_all         best CV PR-AUC 0.9716
+      colsample_bytree      0.8
+      learning_rate         0.1
+      max_depth             -1
+      min_child_samples     80
+      n_estimators          600
+      num_leaves            63
+      reg_lambda            0.0
+      subsample             0.8
+
+==============================================================================
+2. CONFIRMATION (repeated CV on train, tuned params)
+==============================================================================
+
+  5-fold x 5 repeats. This is the stable comparison the
+  test set cannot provide: at ~325 test positives a PR-AUC difference
+  below roughly 0.05 is inside the noise.
+
+  model                           PR-AUC           ROC-AUC       Brier
+------------------------------------------------------------------------------
+  logistic_strict          0.2389 ±0.015     0.6204 ±0.018      0.1315
+  lightgbm_strict          0.2701 ±0.020     0.6521 ±0.022      0.1292
+  logistic_all             0.7846 ±0.026     0.9361 ±0.007      0.0647
+  lightgbm_all             0.9705 ±0.006     0.9928 ±0.001      0.0241
+------------------------------------------------------------------------------
+
+==============================================================================
+3. DOES BOOSTING EARN ITS COMPLEXITY?
+==============================================================================
+
+  strict
+    lightgbm PR-AUC : 0.2701
+    logistic PR-AUC : 0.2389
+    difference      : +0.0313   paired fold interval [+0.0063, +0.0641]
+    lightgbm wins in 100% of 25 folds
+    -> boosting beats logistic on the recommended metric
+
+  all
+    lightgbm PR-AUC : 0.9705
+    logistic PR-AUC : 0.7846
+    difference      : +0.1859   paired fold interval [+0.1444, +0.2239]
+    lightgbm wins in 100% of 25 folds
+    -> boosting beats logistic on the recommended metric
+
+==============================================================================
+4. BASELINES
+==============================================================================
+
+  A model is only good relative to something. Three reference points,
+  all scored on the SAME test set later in this run.
+
+  1. Random          -> PR-AUC = the base rate by construction
+  2. Heuristic       -> rank by total_relationship_count, ascending
+                        (fewer products held = higher churn risk). This
+                        is what an analyst produces with one SQL query.
+  3. Logistic        -> interpretable, regularised
+
+
+==============================================================================
+5. CALIBRATION (fitted on validation)
+==============================================================================
+
+  The profit model in stage 6 multiplies by P(churn) as a probability,
+  so being correctly ranked is not enough -- the number has to mean what
+  it says. Both isotonic and sigmoid (Platt) are fitted on validation.
+
+  ACCEPTANCE RULE (all judged on validation; test is not consulted):
+    1. It must improve validation Brier by at least 0.002. Anything
+       smaller is not worth an extra moving part.
+    2. It must not reduce validation PR-AUC. A calibrator that damages
+       ranking is taking away the thing the policy layer runs on.
+    3. It must leave at least 100 distinct scores. Stage 6 targets the
+       top-k customers by score; a calibrator that collapses the range
+       into a handful of levels makes 'the top 250' undefined.
+
+  Rule 3 is the operational one and it is easy to overlook: isotonic
+  regression is a step function, so it maps many scores onto one value.
+
+  logistic_strict
+    variant       val Brier     gain  val PR-AUC  distinct  accepted
+    raw              0.1320        -      0.2233     2,026         -
+    isotonic         0.1301  +0.0019      0.2335        12     False
+    sigmoid          0.1319  +0.0000      0.2233     2,026     False
+    -> none (raw model kept)
+
+  lightgbm_strict
+    variant       val Brier     gain  val PR-AUC  distinct  accepted
+    raw              0.1292        -      0.2632     2,019         -
+    isotonic         0.1277  +0.0015      0.2597        15     False
+    sigmoid          0.1292  +0.0000      0.2632     2,019     False
+    -> none (raw model kept)
+
+  logistic_all
+    variant       val Brier     gain  val PR-AUC  distinct  accepted
+    raw              0.0670        -      0.7824     2,026         -
+    isotonic         0.0646  +0.0024      0.7733        24     False
+    sigmoid          0.0666  +0.0003      0.7824     2,026     False
+    -> none (raw model kept)
+
+  lightgbm_all
+    variant       val Brier     gain  val PR-AUC  distinct  accepted
+    raw              0.0300        -      0.9617     2,026         -
+    isotonic         0.0243  +0.0057      0.9596        20     False
+    sigmoid          0.0256  +0.0045      0.9617     2,026      True
+    -> sigmoid
+
+  Raw model kept for : logistic_strict, lightgbm_strict, logistic_all
+  Calibrator applied : lightgbm_all -> sigmoid
+
+  Isotonic is rejected everywhere, always on rule 3: it collapses ~2,000
+  scores into 12-24 levels. Sigmoid is rejected wherever the Brier gain
+  is below the 0.002 threshold, which is every model except the
+  all-features LightGBM, where it gains 0.0045 and is accepted.
+
+  The RECOMMENDED model (lightgbm_strict) keeps its raw scores. That is
+  not a cop-out: LightGBM trained without class reweighting is already
+  close to calibrated, which is precisely why class_weight='balanced'
+  was rejected in src/train.py. The Brier gain on offer was 0.0015, and
+  isotonic wanted to collapse 2,019 distinct scores into 15 to get it.
+  For a model whose whole job is to rank customers for targeting, that
+  is a bad trade.
+
+==============================================================================
+6. TEST SET  (scored once)
+==============================================================================
+
+  Everything above used train and validation only. This is the single
+  pass over the test set. Bootstrap CIs from 2,000 resamples.
+
+  model                     PR-AUC (95% CI)             ROC-AUC                Brier
+------------------------------------------------------------------------------
+  random baseline           0.1604                      0.5000                0.1347
+  heuristic                 0.2176  [0.1908, 0.2453]    0.6235                0.2713
+  logistic_strict_raw       0.2370  [0.2042, 0.2774]    0.6203                0.1314
+  logistic_strict_cal       0.2370  [0.2042, 0.2774]    0.6203                0.1314
+  lightgbm_strict_raw       0.2844  [0.2445, 0.3345]    0.6675                0.1278
+  lightgbm_strict_cal       0.2844  [0.2445, 0.3345]    0.6675                0.1278
+  logistic_all_raw          0.7796  [0.7340, 0.8224]    0.9360                0.0644
+  logistic_all_cal          0.7796  [0.7340, 0.8224]    0.9360                0.0644
+  lightgbm_all_raw          0.9724  [0.9601, 0.9825]    0.9933                0.0226
+  lightgbm_all_cal          0.9724  [0.9601, 0.9825]    0.9933                0.0202
+------------------------------------------------------------------------------
+
+  Precision and lift at the top-k customers a budget would contact:
+
+  model                          p@100   lift@100     p@250   lift@250     p@500   lift@500
+------------------------------------------------------------------------------
+  heuristic                      0.250       1.56     0.248       1.55     0.262       1.63
+  logistic_strict_raw            0.290       1.81     0.256       1.60     0.240       1.50
+  logistic_strict_cal            0.290       1.81     0.256       1.60     0.240       1.50
+  lightgbm_strict_raw            0.390       2.43     0.336       2.09     0.298       1.86
+  lightgbm_strict_cal            0.390       2.43     0.336       2.09     0.298       1.86
+  logistic_all_raw               0.880       5.49     0.796       4.96     0.564       3.52
+  logistic_all_cal               0.880       5.49     0.796       4.96     0.564       3.52
+  lightgbm_all_raw               1.000       6.23     0.980       6.11     0.642       4.00
+  lightgbm_all_cal               1.000       6.23     0.980       6.11     0.642       4.00
+------------------------------------------------------------------------------
+  (base rate 0.1604; lift of 1.00 = no better than random)
+
