@@ -1,0 +1,114 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: >
+      Cleaned, renamed, typed customer snapshot. One row per customer. The two
+      leaked Naive_Bayes_Classifier_* columns are dropped here and never appear
+      downstream.
+    columns:
+
+      - name: customer_id
+        description: "Primary key. Originally CLIENTNUM."
+        tests:
+          - unique
+          - not_null
+
+      - name: is_attrited
+        description: "Target. 1 = Attrited Customer, 0 = Existing Customer."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+
+      - name: gender
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['M', 'F']
+
+      - name: education_level
+        description: "'Unknown' is retained as a real level. See plan section 2."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Uneducated', 'High School', 'College', 'Graduate',
+                         'Post-Graduate', 'Doctorate', 'Unknown']
+
+      - name: marital_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Married', 'Single', 'Divorced', 'Unknown']
+
+      - name: income_category
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Less than $40K', '$40K - $60K', '$60K - $80K',
+                         '$80K - $120K', '$120K +', 'Unknown']
+
+      - name: card_category
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Blue', 'Silver', 'Gold', 'Platinum']
+
+      - name: customer_age
+        tests:
+          - not_null
+          # A credit card holder outside 18-100 would be a data fault.
+          - accepted_range:
+              arguments:
+                min_value: 18
+                max_value: 100
+
+      - name: months_on_book
+        tests: [not_null]
+
+      - name: total_relationship_count
+        tests: [not_null]
+
+      - name: months_inactive_12_mon
+        description: "LEAKAGE-SUSPECT. See plan section 5."
+        tests: [not_null]
+
+      - name: contacts_count_12_mon
+        description: "LEAKAGE-SUSPECT."
+        tests: [not_null]
+
+      - name: credit_limit
+        tests: [not_null]
+
+      - name: total_revolving_bal
+        description: "LEAKAGE-SUSPECT."
+        tests: [not_null]
+
+      - name: avg_open_to_buy
+        tests: [not_null]
+
+      - name: total_amt_chng_q4_q1
+        description: "LEAKAGE-SUSPECT. Q4-vs-Q1 change is close to a definition of disengagement."
+        tests: [not_null]
+
+      - name: total_trans_amt
+        description: "LEAKAGE-SUSPECT."
+        tests: [not_null]
+
+      - name: total_trans_ct
+        description: "LEAKAGE-SUSPECT."
+        tests: [not_null]
+
+      - name: total_ct_chng_q4_q1
+        description: "LEAKAGE-SUSPECT."
+        tests: [not_null]
+
+      - name: avg_utilization_ratio
+        description: "LEAKAGE-SUSPECT."
+        tests: [not_null]

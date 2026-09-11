@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      The unmodified BankChurners.csv snapshot. Read straight off disk by DuckDB
+      rather than copied into the database first, so there is exactly one copy of
+      the raw data and its SHA-256 in data/PROVENANCE.md stays authoritative.
+    tables:
+      - name: bank_churners
+        description: "10,127 credit card customers. One row per customer."
+        meta:
+          external_location: "read_csv_auto('../data/raw/BankChurners.csv', header=true)"

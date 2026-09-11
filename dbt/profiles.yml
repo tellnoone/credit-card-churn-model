@@ -1,0 +1,8 @@
+churn:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # Build artefact, rebuilt by run_all.py. Gitignored.
+      path: ../data/churn.duckdb
+      threads: 4

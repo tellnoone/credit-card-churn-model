@@ -1,0 +1,97 @@
+version: 2
+
+models:
+  - name: fct_customer_features
+    description: >
+      Model-ready feature table, one row per customer. Derived features inherit
+      the leakage class of their inputs; the SAFE/SUSPECT split is defined in
+      src/features.py and audited in stage 3.
+    tests:
+      # Row count must survive the whole pipeline unchanged: staging and
+      # features are both 1:1 with the raw snapshot, so any join or filter that
+      # silently drops customers is a bug.
+      - expect_row_count:
+          arguments:
+            expected: 10127
+    columns:
+
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+
+      - name: is_attrited
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+
+      # --- SAFE derived ---
+      - name: tenure_years
+        description: "SAFE. months_on_book / 12."
+        tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 60
+
+      - name: card_category_ord
+        description: "SAFE. Blue=1 < Silver=2 < Gold=3 < Platinum=4."
+        tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 4
+
+      - name: income_category_ord
+        description: "SAFE. NULL where income is 'Unknown' (10.98% of rows) - by design."
+        # Deliberately no not_null test: NULL is the correct encoding of Unknown
+        # on an ordered scale. The income_is_unknown flag carries that signal.
+
+      - name: education_level_ord
+        description: "SAFE. NULL where education is 'Unknown' (15.00% of rows) - by design."
+
+      - name: products_per_tenure_year
+        description: "SAFE. Relationship depth per year of tenure."
+        tests: [not_null]
+
+      # --- SUSPECT derived ---
+      - name: avg_trans_amt
+        description: >
+          SUSPECT. The NULLIF guard in SQL turns out to be defensive only: the
+          minimum total_trans_ct in this snapshot is 10, so no customer divides
+          by zero. The not_null test below is therefore a tripwire - if it ever
+          fails, the incoming data contains zero-transaction customers and the
+          feature needs an explicit decision rather than a NULL.
+        tests: [not_null]
+
+      - name: revolving_to_limit
+        description: "SUSPECT. Share of credit line drawn down."
+        tests: [not_null]
+
+      - name: spend_to_limit
+        description: "SUSPECT."
+        tests: [not_null]
+
+      - name: trans_per_active_month
+        description: >
+          SUSPECT twice over: built from both transaction counts and
+          months_inactive. Worth noting a quirk: despite the column being named
+          _12_mon, months_inactive_12_mon maxes out at 6 in this snapshot, so the
+          (12 - inactive) denominator is never zero and this is never NULL. That
+          ceiling is undocumented upstream and is itself a small reason to
+          distrust the column. Tripwire test below.
+        tests: [not_null]
+
+      - name: q4_activity_collapsed
+        description: >
+          SUSPECT, and the sharpest leakage candidate in the dataset. Arguably
+          measures churn rather than predicting it.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
