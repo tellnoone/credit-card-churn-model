@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+# DuckDB database is a build artefact: rebuilt by run_all.py
+*.duckdb
+*.duckdb.wal
+# dbt build artefacts
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+logs/

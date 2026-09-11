@@ -1,0 +1,14 @@
+PyYAML==6.0.3
+dbt-core==1.12.4
+dbt-duckdb==1.11.0
+duckdb==1.5.5
+joblib==1.6.0
+lightgbm==4.7.0
+matplotlib==3.11.1
+numpy==2.5.3
+pandas==3.0.5
+pytest==9.1.1
+scikit-learn==1.9.1
+scipy==1.18.1
+shap==0.52.0
+xgboost==3.4.1
