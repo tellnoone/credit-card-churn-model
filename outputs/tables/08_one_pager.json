@@ -1,0 +1,45 @@
+{
+  "rows": [
+    {
+      "offer_cost": 40,
+      "n_targeted_book": 4.998519249753208,
+      "net_value_book": 10.225794100592509,
+      "break_even_p": 0.5333333333333333
+    },
+    {
+      "offer_cost": 30,
+      "n_targeted_book": 209.93780848963473,
+      "net_value_book": 652.0728582598618,
+      "break_even_p": 0.4
+    },
+    {
+      "offer_cost": 25,
+      "n_targeted_book": 359.893385982231,
+      "net_value_book": 2132.254942982887,
+      "break_even_p": 0.3333333333333333
+    },
+    {
+      "offer_cost": 20,
+      "n_targeted_book": 939.7216189536032,
+      "net_value_book": 4920.495610800723,
+      "break_even_p": 0.26666666666666666
+    },
+    {
+      "offer_cost": 15,
+      "n_targeted_book": 2644.216683119447,
+      "net_value_book": 13542.98771227653,
+      "break_even_p": 0.2
+    },
+    {
+      "offer_cost": 10,
+      "n_targeted_book": 4943.535538005923,
+      "net_value_book": 30980.309891771198,
+      "break_even_p": 0.13333333333333333
+    }
+  ],
+  "book_size": 10127,
+  "assumptions": {
+    "customer_value": 300.0,
+    "save_rate": 0.25
+  }
+}
