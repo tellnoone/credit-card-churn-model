@@ -241,12 +241,15 @@ outputs/              tables/ (txt + json) and figures/ (png)
 
 ```bash
 python -m venv .venv && .venv/Scripts/pip install -r requirements.txt
-python run_all.py          # ~5 minutes end to end
+python run_all.py          # 5-17 min depending on machine load
 python -m pytest           # 67 tests
 python verify_report.py    # checks every number in this README
 ```
 
-Seeded throughout (`RANDOM_SEED = 20260911` in `src/config.py`).
+Seeded throughout (`RANDOM_SEED = 20260911` in `src/config.py`). Verified
+deterministic: deleting `data/churn.duckdb` and re-running the whole pipeline
+leaves `git status` clean — every table, JSON and figure reproduces
+byte-identically.
 
 ### The discipline, enforced mechanically rather than promised
 
