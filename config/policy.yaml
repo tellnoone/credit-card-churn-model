@@ -1,0 +1,103 @@
+# Retention policy assumptions
+#
+# EVERY NUMBER IN THIS FILE IS AN ASSUMPTION, NOT A FINDING.
+#
+# The dataset has no revenue, no offer history and no response data, so customer
+# value and save rate cannot be measured from it. They are stated here, with
+# reasoning, so a reader can disagree with a specific number rather than with a
+# black box -- and so the sensitivity analysis can show how much the conclusion
+# depends on each one.
+#
+# Currency note: these are GBP, framed for a UK SME card issuer. The dollar
+# amounts inside the dataset (credit_limit, transaction totals) are the
+# dataset's own units and are unrelated to the figures below.
+
+currency: GBP
+
+# --------------------------------------------------------------------------
+# Customer value
+# --------------------------------------------------------------------------
+customer_value:
+  central: 300.0
+  low: 100.0
+  high: 800.0
+  unit: "GBP gross margin per retained customer per year"
+  reasoning: >
+    Annual gross margin on an SME business credit card comes from three places:
+    interchange on card spend (roughly 1-2% of volume, and SME spend per account
+    runs well above consumer), net interest on revolving balances, and any annual
+    or FX fee. GBP 300 is a deliberately middling central estimate for an active
+    SME account. The range is wide because the true figure depends heavily on
+    portfolio mix: a dormant-but-open account is worth near zero, while a
+    high-spend account revolving a balance can clear GBP 800.
+  how_to_replace: >
+    Substitute the finance team's actual gross margin per active account for the
+    last 12 months, segmented by card tier. This is normally a known number and
+    should never stay an assumption in a real deployment.
+
+# --------------------------------------------------------------------------
+# Save rate
+# --------------------------------------------------------------------------
+save_rate:
+  central: 0.25
+  low: 0.05
+  high: 0.50
+  unit: "probability that the offer retains a customer who would otherwise churn"
+  reasoning: >
+    This is the causal effect of the offer on someone who was genuinely going to
+    leave, which is the hardest quantity in the whole calculation and the one the
+    data says nothing about. Published retention-campaign effects and practitioner
+    experience generally land in the 10-30% band; offers rarely rescue more than a
+    third of true leavers, because most have already decided. 0.25 is optimistic
+    but defensible. 0.05 represents a near-useless offer; 0.50 would be
+    exceptional and I would not plan against it.
+  how_to_replace: >
+    This is exactly what the stage 7 randomised holdout measures. Until that
+    experiment runs, every profit figure in this project inherits the uncertainty
+    in this single parameter.
+
+# --------------------------------------------------------------------------
+# Offer cost
+# --------------------------------------------------------------------------
+offer_cost:
+  central: 40.0
+  low: 10.0
+  high: 100.0
+  unit: "GBP cost per customer contacted"
+  reasoning: >
+    Charged for every customer contacted, whether or not they were going to
+    churn and whether or not the offer works. GBP 40 suits a meaningful
+    incentive: an annual fee waiver, a statement credit, or a bonus points
+    award. GBP 10 is a cheap points nudge; GBP 100 approaches a fee holiday plus
+    outbound agent time. Contact and fulfilment overhead is folded in here
+    rather than tracked separately.
+  how_to_replace: >
+    Marketing can price this precisely. It is the easiest of the three to pin
+    down and the one that most strongly determines the break-even threshold.
+
+# --------------------------------------------------------------------------
+# Horizon
+# --------------------------------------------------------------------------
+horizon_years: 1.0
+horizon_reasoning: >
+  Value is counted over ONE year, not over a customer lifetime. Lifetime value
+  would multiply every figure by 3-5x and make almost any campaign look
+  profitable, which is how retention business cases usually get inflated. A
+  saved customer may also churn next year, so the one-year figure is the honest
+  conservative choice. If the business wants an LTV framing, multiply the net
+  value by the retention-adjusted multiple and state it separately.
+
+# --------------------------------------------------------------------------
+# Sensitivity grid
+# --------------------------------------------------------------------------
+sensitivity:
+  customer_value: [100.0, 200.0, 300.0, 400.0, 600.0, 800.0]
+  save_rate: [0.05, 0.10, 0.15, 0.25, 0.35, 0.50]
+  offer_cost: [10.0, 20.0, 40.0, 60.0, 100.0]
+
+# --------------------------------------------------------------------------
+# Budget constraint, used for the top-k view
+# --------------------------------------------------------------------------
+budget:
+  max_contacts: null          # null = unconstrained; the threshold decides
+  contact_options: [100, 250, 500, 1000]

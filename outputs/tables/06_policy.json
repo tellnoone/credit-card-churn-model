@@ -1,0 +1,408 @@
+{
+  "assumptions": {
+    "customer_value": 300.0,
+    "save_rate": 0.25,
+    "offer_cost": 40.0,
+    "horizon_years": 1.0,
+    "currency": "GBP"
+  },
+  "break_even_probability": 0.5333333333333333,
+  "central": {
+    "optimal": {
+      "threshold": 0.5333333333333333,
+      "n_targeted": 1,
+      "share_targeted": 0.0004935834155972359,
+      "expected_saves": 0.14015254891142503,
+      "gross_value": 42.04576467342751,
+      "offer_cost_total": 40.0,
+      "net_value": 2.045764673427513,
+      "net_value_per_contact": 2.045764673427513
+    },
+    "everyone": {
+      "threshold": -Infinity,
+      "n_targeted": 2026,
+      "share_targeted": 1.0,
+      "expected_saves": 81.83725513226655,
+      "gross_value": 24551.176539679964,
+      "offer_cost_total": 81040.0,
+      "net_value": -56488.82346032004,
+      "net_value_per_contact": -27.881946426614036
+    },
+    "nobody": {
+      "threshold": Infinity,
+      "n_targeted": 0,
+      "share_targeted": 0.0,
+      "expected_saves": 0.0,
+      "gross_value": 0.0,
+      "offer_cost_total": 0.0,
+      "net_value": 0.0,
+      "net_value_per_contact": 0.0
+    },
+    "bootstrap": {
+      "point": 2.045764673427513,
+      "lo": 0.0,
+      "hi": 6.137294020282525,
+      "share_positive": 0.629
+    },
+    "scaled_to_book": 10.225794100592509
+  },
+  "leakage_price": {
+    "all_features": {
+      "threshold": 0.5333333333333333,
+      "n_targeted": 322,
+      "share_targeted": 0.15893385982230998,
+      "expected_saves": 74.59041013613682,
+      "gross_value": 22377.12304084105,
+      "offer_cost_total": 12880.0,
+      "net_value": 9497.123040841048,
+      "net_value_per_contact": 29.49417093428897
+    },
+    "strict": {
+      "threshold": 0.5333333333333333,
+      "n_targeted": 1,
+      "share_targeted": 0.0004935834155972359,
+      "expected_saves": 0.14015254891142503,
+      "gross_value": 42.04576467342751,
+      "offer_cost_total": 40.0,
+      "net_value": 2.045764673427513,
+      "net_value_per_contact": 2.045764673427513
+    },
+    "annual_gap_scaled": 47461.32654281812
+  },
+  "sensitivity": [
+    {
+      "customer_value": 100.0,
+      "save_rate": 0.05,
+      "offer_cost": 40.0,
+      "break_even_p": 8.0,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 100.0,
+      "save_rate": 0.1,
+      "offer_cost": 40.0,
+      "break_even_p": 4.0,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 100.0,
+      "save_rate": 0.15,
+      "offer_cost": 40.0,
+      "break_even_p": 2.6666666666666665,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 100.0,
+      "save_rate": 0.25,
+      "offer_cost": 40.0,
+      "break_even_p": 1.6,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 100.0,
+      "save_rate": 0.35,
+      "offer_cost": 40.0,
+      "break_even_p": 1.1428571428571428,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 100.0,
+      "save_rate": 0.5,
+      "offer_cost": 40.0,
+      "break_even_p": 0.8,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 200.0,
+      "save_rate": 0.05,
+      "offer_cost": 40.0,
+      "break_even_p": 4.0,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 200.0,
+      "save_rate": 0.1,
+      "offer_cost": 40.0,
+      "break_even_p": 2.0,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 200.0,
+      "save_rate": 0.15,
+      "offer_cost": 40.0,
+      "break_even_p": 1.3333333333333333,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 200.0,
+      "save_rate": 0.25,
+      "offer_cost": 40.0,
+      "break_even_p": 0.8,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 200.0,
+      "save_rate": 0.35,
+      "offer_cost": 40.0,
+      "break_even_p": 0.5714285714285714,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 200.0,
+      "save_rate": 0.5,
+      "offer_cost": 40.0,
+      "break_even_p": 0.4,
+      "n_targeted": 42,
+      "net_value": 173.937607166911,
+      "pays": true
+    },
+    {
+      "customer_value": 300.0,
+      "save_rate": 0.05,
+      "offer_cost": 40.0,
+      "break_even_p": 2.6666666666666665,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 300.0,
+      "save_rate": 0.1,
+      "offer_cost": 40.0,
+      "break_even_p": 1.3333333333333333,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 300.0,
+      "save_rate": 0.15,
+      "offer_cost": 40.0,
+      "break_even_p": 0.8888888888888888,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 300.0,
+      "save_rate": 0.25,
+      "offer_cost": 40.0,
+      "break_even_p": 0.5333333333333333,
+      "n_targeted": 1,
+      "net_value": 2.045764673427513,
+      "pays": true
+    },
+    {
+      "customer_value": 300.0,
+      "save_rate": 0.35,
+      "offer_cost": 40.0,
+      "break_even_p": 0.38095238095238093,
+      "n_targeted": 51,
+      "net_value": 273.3872635905482,
+      "pays": true
+    },
+    {
+      "customer_value": 300.0,
+      "save_rate": 0.5,
+      "offer_cost": 40.0,
+      "break_even_p": 0.26666666666666666,
+      "n_targeted": 188,
+      "net_value": 1968.7812989991635,
+      "pays": true
+    },
+    {
+      "customer_value": 400.0,
+      "save_rate": 0.05,
+      "offer_cost": 40.0,
+      "break_even_p": 2.0,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 400.0,
+      "save_rate": 0.1,
+      "offer_cost": 40.0,
+      "break_even_p": 1.0,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 400.0,
+      "save_rate": 0.15,
+      "offer_cost": 40.0,
+      "break_even_p": 0.6666666666666666,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 400.0,
+      "save_rate": 0.25,
+      "offer_cost": 40.0,
+      "break_even_p": 0.4,
+      "n_targeted": 42,
+      "net_value": 173.937607166911,
+      "pays": true
+    },
+    {
+      "customer_value": 400.0,
+      "save_rate": 0.35,
+      "offer_cost": 40.0,
+      "break_even_p": 0.2857142857142857,
+      "n_targeted": 132,
+      "net_value": 1420.8112131686985,
+      "pays": true
+    },
+    {
+      "customer_value": 400.0,
+      "save_rate": 0.5,
+      "offer_cost": 40.0,
+      "break_even_p": 0.2,
+      "n_targeted": 529,
+      "net_value": 7225.066483676575,
+      "pays": true
+    },
+    {
+      "customer_value": 600.0,
+      "save_rate": 0.05,
+      "offer_cost": 40.0,
+      "break_even_p": 1.3333333333333333,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 600.0,
+      "save_rate": 0.1,
+      "offer_cost": 40.0,
+      "break_even_p": 0.6666666666666666,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 600.0,
+      "save_rate": 0.15,
+      "offer_cost": 40.0,
+      "break_even_p": 0.4444444444444444,
+      "n_targeted": 17,
+      "net_value": 49.093916325099485,
+      "pays": true
+    },
+    {
+      "customer_value": 600.0,
+      "save_rate": 0.25,
+      "offer_cost": 40.0,
+      "break_even_p": 0.26666666666666666,
+      "n_targeted": 188,
+      "net_value": 1968.7812989991635,
+      "pays": true
+    },
+    {
+      "customer_value": 600.0,
+      "save_rate": 0.35,
+      "offer_cost": 40.0,
+      "break_even_p": 0.19047619047619047,
+      "n_targeted": 568,
+      "net_value": 8685.984968801506,
+      "pays": true
+    },
+    {
+      "customer_value": 600.0,
+      "save_rate": 0.5,
+      "offer_cost": 40.0,
+      "break_even_p": 0.13333333333333333,
+      "n_targeted": 989,
+      "net_value": 24791.589944002546,
+      "pays": true
+    },
+    {
+      "customer_value": 800.0,
+      "save_rate": 0.05,
+      "offer_cost": 40.0,
+      "break_even_p": 1.0,
+      "n_targeted": 0,
+      "net_value": 0.0,
+      "pays": false
+    },
+    {
+      "customer_value": 800.0,
+      "save_rate": 0.1,
+      "offer_cost": 40.0,
+      "break_even_p": 0.5,
+      "n_targeted": 3,
+      "net_value": 8.926994806497305,
+      "pays": true
+    },
+    {
+      "customer_value": 800.0,
+      "save_rate": 0.15,
+      "offer_cost": 40.0,
+      "break_even_p": 0.3333333333333333,
+      "n_targeted": 72,
+      "net_value": 682.5237111852798,
+      "pays": true
+    },
+    {
+      "customer_value": 800.0,
+      "save_rate": 0.25,
+      "offer_cost": 40.0,
+      "break_even_p": 0.2,
+      "n_targeted": 529,
+      "net_value": 7225.066483676575,
+      "pays": true
+    },
+    {
+      "customer_value": 800.0,
+      "save_rate": 0.35,
+      "offer_cost": 40.0,
+      "break_even_p": 0.14285714285714285,
+      "n_targeted": 892,
+      "net_value": 20645.237201666183,
+      "pays": true
+    },
+    {
+      "customer_value": 800.0,
+      "save_rate": 0.5,
+      "offer_cost": 40.0,
+      "break_even_p": 0.1,
+      "n_targeted": 1784,
+      "net_value": 51249.300964748996,
+      "pays": true
+    }
+  ],
+  "assumption_bounds": {
+    "min_customer_value": 285.4033115077764,
+    "min_save_rate": 0.23785397338867187,
+    "max_offer_cost": 42.045758593827486
+  },
+  "assumption_margins": {
+    "customer_value": 0.04865562830741207,
+    "save_rate": 0.048584106445312525,
+    "offer_cost": 0.05114396484568715
+  }
+}
