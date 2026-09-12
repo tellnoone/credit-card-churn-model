@@ -313,6 +313,58 @@ def main() -> int:
     say(f"  (base rate {base_rate:.4f}; lift of 1.00 = no better than random)")
     say()
 
+    # ------------------------------------- model vs heuristic, paired on test --
+    head("7. DOES THE MODEL BEAT THE ONE-LINE HEURISTIC?")
+    say("  The heuristic is `ORDER BY total_relationship_count ASC` -- what an")
+    say("  analyst produces in an afternoon. If the model cannot beat it by more")
+    say("  than noise, the model is not worth maintaining.")
+    say()
+    rng = np.random.default_rng(rng_seed)
+    s_model = test_scores["lightgbm_strict_raw"]
+    s_heur = test_scores["heuristic"]
+    n = len(y_test)
+    diffs = []
+    for _ in range(2_000):
+        i = rng.integers(0, n, n)
+        if y_test[i].sum() < 2:
+            continue
+        diffs.append(average_precision_score(y_test[i], s_model[i])
+                     - average_precision_score(y_test[i], s_heur[i]))
+    diffs = np.asarray(diffs)
+    lo_d, hi_d = np.percentile(diffs, [2.5, 97.5])
+    beats = bool(lo_d > 0)
+    say(f"  lightgbm_strict PR-AUC : "
+        f"{results['lightgbm_strict_raw']['pr_auc']['point']:.4f}")
+    say(f"  heuristic PR-AUC       : {results['heuristic']['pr_auc']['point']:.4f}")
+    say(f"  paired difference      : {diffs.mean():+.4f}  "
+        f"[{lo_d:+.4f}, {hi_d:+.4f}]")
+    say(f"  -> the model {'BEATS' if beats else 'does NOT beat'} the heuristic "
+        f"beyond sampling noise")
+    say()
+    say("  Paired on the same bootstrap resamples, so fold-to-fold difficulty")
+    say("  cancels. An unpaired comparison of two intervals would be far weaker.")
+    say()
+    model_vs_heuristic = {
+        "model_pr_auc": float(results["lightgbm_strict_raw"]["pr_auc"]["point"]),
+        "heuristic_pr_auc": float(results["heuristic"]["pr_auc"]["point"]),
+        "mean_diff": float(diffs.mean()),
+        "diff_lo": float(lo_d), "diff_hi": float(hi_d),
+        "beats_heuristic": beats,
+    }
+
+    score_range = {
+        "min": float(test_scores["lightgbm_strict_raw"].min()),
+        "max": float(test_scores["lightgbm_strict_raw"].max()),
+        "n_distinct": int(len(np.unique(test_scores["lightgbm_strict_raw"]))),
+        "n_above_0_50": int((test_scores["lightgbm_strict_raw"] > 0.50).sum()),
+    }
+    say(f"  Recommended model score range on test: "
+        f"{score_range['min']:.3f} to {score_range['max']:.3f}, "
+        f"{score_range['n_distinct']:,} distinct values.")
+    say(f"  Only {score_range['n_above_0_50']} customers score above 0.50, which")
+    say("  is what caps the achievable profit in stage 6.")
+    say()
+
     # ------------------------------------------------------------- figures --
     _plot_reliability(y_test, test_scores, base_rate)
     _plot_pr_curves(y_test, test_scores, base_rate)
@@ -340,6 +392,8 @@ def main() -> int:
         "calibration_choice": calib_choice,
         "test_metrics": results,
         "recommended_model": recommended,
+        "model_vs_heuristic": model_vs_heuristic,
+        "score_range": score_range,
     }
     (TABLES / "04_modelling.json").write_text(
         json.dumps(payload, indent=2, default=float), encoding="utf-8")

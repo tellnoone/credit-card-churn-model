@@ -188,3 +188,23 @@ STAGE 4: MODELLING
 ------------------------------------------------------------------------------
   (base rate 0.1604; lift of 1.00 = no better than random)
 
+==============================================================================
+7. DOES THE MODEL BEAT THE ONE-LINE HEURISTIC?
+==============================================================================
+
+  The heuristic is `ORDER BY total_relationship_count ASC` -- what an
+  analyst produces in an afternoon. If the model cannot beat it by more
+  than noise, the model is not worth maintaining.
+
+  lightgbm_strict PR-AUC : 0.2844
+  heuristic PR-AUC       : 0.2176
+  paired difference      : +0.0702  [+0.0400, +0.1014]
+  -> the model BEATS the heuristic beyond sampling noise
+
+  Paired on the same bootstrap resamples, so fold-to-fold difficulty
+  cancels. An unpaired comparison of two intervals would be far weaker.
+
+  Recommended model score range on test: 0.052 to 0.561, 2,019 distinct values.
+  Only 3 customers score above 0.50, which
+  is what caps the achievable profit in stage 6.
+

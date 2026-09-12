@@ -864,5 +864,19 @@
       }
     }
   },
-  "recommended_model": "lightgbm_strict"
+  "recommended_model": "lightgbm_strict",
+  "model_vs_heuristic": {
+    "model_pr_auc": 0.2843923013693382,
+    "heuristic_pr_auc": 0.2176328128720115,
+    "mean_diff": 0.07017765759293874,
+    "diff_lo": 0.039973223180036835,
+    "diff_hi": 0.10135738737342927,
+    "beats_heuristic": true
+  },
+  "score_range": {
+    "min": 0.05174273019653401,
+    "max": 0.5606101956457001,
+    "n_distinct": 2019,
+    "n_above_0_50": 3
+  }
 }

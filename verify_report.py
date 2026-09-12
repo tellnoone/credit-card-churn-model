@@ -192,6 +192,31 @@ chk("boosting CI lo", 0.0063, bl["diff_lo"], tol=5e-3)
 chk("boosting CI hi", 0.0641, bl["diff_hi"], tol=5e-3)
 
 # ---------------------------------------------------------------------------
+# Model vs heuristic, and score range (quoted in docs/interview_prep.md)
+# ---------------------------------------------------------------------------
+mvh = a4["model_vs_heuristic"]
+chk("model beats heuristic by", 0.0702, mvh["mean_diff"], tol=5e-3)
+chk("heuristic gap CI lo", 0.0400, mvh["diff_lo"], tol=5e-3)
+chk("heuristic gap CI hi", 0.1014, mvh["diff_hi"], tol=5e-3)
+chk_exact("model beats heuristic", True, mvh["beats_heuristic"])
+
+sr = a4["score_range"]
+chk("model max score", 0.561, sr["max"], tol=5e-3)
+chk("model min score", 0.052, sr["min"], tol=5e-3)
+chk_exact("distinct scores", 2019, sr["n_distinct"])
+chk_exact("customers above 0.50", 3, sr["n_above_0_50"])
+
+# Calibration: the isotonic collapse quoted in the interview prep
+cal = a4["calibration_choice"]["lightgbm_strict"]
+chk_exact("isotonic distinct scores", 15, cal["candidates"]["isotonic"]["distinct_scores"])
+chk("isotonic brier gain", 0.0015, cal["candidates"]["isotonic"]["brier_gain"], tol=5e-4)
+chk_exact("recommended keeps raw", True, cal["chosen"].startswith("none"))
+
+# CV figures quoted for the boosting comparison
+chk("lightgbm strict CV", 0.2701, a4["cv_confirmation"]["lightgbm_strict"]["pr_auc_mean"], tol=5e-3)
+chk("logistic strict CV", 0.2389, a4["cv_confirmation"]["logistic_strict"]["pr_auc_mean"], tol=5e-3)
+
+# ---------------------------------------------------------------------------
 # One-pager (docs/one_pager.md)
 # ---------------------------------------------------------------------------
 op = {int(r["offer_cost"]): r for r in a8["rows"]}
@@ -204,6 +229,17 @@ chk_exact("one-pager book size", 10127, a8["book_size"])
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
+# The interview prep quotes how many figures this script checks. That claim can
+# itself go stale, so it is checked here -- otherwise the one number in the repo
+# nobody verifies would be the one about verification.
+_prep = ROOT / "docs" / "interview_prep.md"
+if _prep.exists():
+    import re as _re
+    m = _re.search(r"checked by a script\*\* \((\d+) of them\)",
+                   _prep.read_text(encoding="utf-8"))
+    if m:
+        chk_exact("interview_prep claimed check count", int(m.group(1)), len(checks) + 1)
+
 failed = [c for c in checks if not c[0]]
 print(f"{len(checks) - len(failed)}/{len(checks)} documented figures verified")
 
