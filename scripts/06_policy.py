@@ -396,7 +396,8 @@ def _plot_profit_curves(p_strict: np.ndarray, p_all: np.ndarray,
             color='#2e7d32', zorder=5,
             label=f"optimum: {best['n_targeted']} contacted, "
                   f"{money(best['net_value'], cur)}")
-    full_worst = float(curve['net_value'].min())
+    # abs(): the title says "would lose", so money() must not also add a sign
+    full_worst = abs(float(curve['net_value'].min()))
     ax.set_xlabel('customers contacted (zoomed to the first 300)')
     ax.set_ylabel(f'expected net value ({cur})')
     ax.set_title('Strict model, decision region\n'
